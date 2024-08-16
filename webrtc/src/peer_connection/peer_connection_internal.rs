@@ -1071,6 +1071,7 @@ impl PeerConnectionInternal {
             params.codecs[0].payload_type,
             params.codecs[0].capability.clone(),
             &params.header_extensions,
+            None,
         );
         let (rtp_read_stream, rtp_interceptor, rtcp_read_stream, rtcp_interceptor) = self
             .dtls_transport
