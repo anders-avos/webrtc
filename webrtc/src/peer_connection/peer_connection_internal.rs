@@ -1378,7 +1378,7 @@ impl PeerConnectionInternal {
             let sender = transceiver.sender().await;
             let track_encodings = sender.track_encodings.lock().await;
             for encoding in track_encodings.iter() {
-                let track_id = encoding.track.id().to_string();
+                let track_id = encoding.track.id();
                 let kind = match encoding.track.kind() {
                     RTPCodecType::Unspecified => continue,
                     RTPCodecType::Audio => "audio",
@@ -1386,12 +1386,22 @@ impl PeerConnectionInternal {
                 };
 
                 track_infos.push(TrackInfo {
-                    track_id,
+                    track_id: track_id.to_owned(),
                     ssrc: encoding.ssrc,
                     mid: mid.to_owned(),
                     rid: encoding.track.rid().map(Into::into),
                     kind,
                 });
+
+                if let Some(rtx) = &encoding.rtx {
+                    track_infos.push(TrackInfo {
+                        track_id: track_id.to_owned(),
+                        ssrc: rtx.ssrc,
+                        mid: mid.to_owned(),
+                        rid: encoding.track.rid().map(Into::into),
+                        kind,
+                    });
+                }
             }
         }
 
