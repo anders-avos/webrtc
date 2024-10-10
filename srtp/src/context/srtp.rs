@@ -1,4 +1,5 @@
 use bytes::Bytes;
+use log::error;
 use util::marshal::*;
 
 use super::*;
@@ -14,6 +15,8 @@ impl Context {
             let state = self.get_srtp_ssrc_state(header.ssrc);
             if let Some(replay_detector) = &mut state.replay_detector {
                 if !replay_detector.check(header.sequence_number as u64) {
+                    error!("dropping duplicate {header:?}");
+
                     return Err(Error::SrtpSsrcDuplicated(
                         header.ssrc,
                         header.sequence_number,
