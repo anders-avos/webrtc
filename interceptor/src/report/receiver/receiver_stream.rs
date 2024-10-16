@@ -1,6 +1,7 @@
 use std::time::SystemTime;
 
 use async_trait::async_trait;
+use log::{debug, error};
 use util::sync::Mutex;
 
 use super::*;
@@ -210,9 +211,11 @@ impl ReceiverStream {
 
         // prevent sending report before probing is complete
         if internal.wait_for_probe {
+            error!("suppressed report {}", internal.ssrc);
             return None;
         }
 
+        debug!("generated report {}", internal.ssrc);
         Some(internal.generate_report(now))
     }
 }

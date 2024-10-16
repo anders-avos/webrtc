@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use std::sync::Weak;
 
 use arc_swap::ArcSwapOption;
+use log::error;
 use portable_atomic::AtomicIsize;
 use smol_str::SmolStr;
 use tokio::time::Instant;
@@ -1059,6 +1060,11 @@ impl PeerConnectionInternal {
             rsid_extension_id as u8,
         )?;
 
+        error!(
+            "packet ext ids mid={mid_extension_id} sid={sid_extension_id} rsid={rsid_extension_id}"
+        );
+        error!("packet probe {packet:?}");
+
         // TODO: Can we have attributes on the first packets?
         buffered_packets.push_back((packet, Attributes::new()));
 
@@ -1096,6 +1102,8 @@ impl PeerConnectionInternal {
                 let (pkt, a) = rtp_interceptor
                     .read(&mut buf, &stream_info.attributes)
                     .await?;
+                error!("packet probe {pkt:?}");
+
                 let (m, r, rs, _) = handle_unknown_rtp_packet(
                     &pkt.header,
                     mid_extension_id as u8,
