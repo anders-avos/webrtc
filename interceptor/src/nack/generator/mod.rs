@@ -92,6 +92,8 @@ pub struct Generator {
 }
 
 impl Generator {
+    const MAX_NACK_PAIRS_PER_TLN: usize = 253;
+
     /// builder returns a new GeneratorBuilder.
     pub fn builder() -> GeneratorBuilder {
         GeneratorBuilder::default()
@@ -129,11 +131,15 @@ impl Generator {
                                 continue;
                             }
 
-                            nacks.push(TransportLayerNack{
-                                sender_ssrc,
-                                media_ssrc: *ssrc,
-                                nacks:  nack_pairs_from_sequence_numbers(&missing),
-                            });
+                            let nack_pairs = nack_pairs_from_sequence_numbers(&missing);
+
+                            for nack_chunk in nack_pairs.chunks(Self::MAX_NACK_PAIRS_PER_TLN) {
+                                nacks.push(TransportLayerNack{
+                                    sender_ssrc,
+                                    media_ssrc: *ssrc,
+                                    nacks: nack_chunk.to_vec(),
+                                });
+                            }
                         }
                         nacks
                     };
