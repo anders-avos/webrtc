@@ -446,6 +446,14 @@ impl AgentInternal {
                     let disconnected_time = SystemTime::now()
                         .duration_since(selected_pair.remote.last_received())
                         .unwrap_or_else(|_| Duration::from_secs(0));
+
+                    log::trace!(
+                        "checking pair {:?}, disconnected for {:?}, timeout {:?}",
+                        selected_pair,
+                        disconnected_time,
+                        self.disconnected_timeout
+                    );
+
                     (true, disconnected_time)
                 },
             )
@@ -971,6 +979,7 @@ impl AgentInternal {
         }
 
         if let Some(rc) = remote_candidate {
+            log::trace!("set seen {} {}", local, rc);
             rc.seen(false);
         }
     }
@@ -985,6 +994,7 @@ impl AgentInternal {
         self.find_remote_candidate(local.network_type(), remote)
             .await
             .is_some_and(|remote_candidate| {
+                log::trace!("inbound data seen for {} -> {}", local, remote_candidate);
                 remote_candidate.seen(false);
                 true
             })
@@ -1157,7 +1167,10 @@ impl AgentInternal {
         src_addr: SocketAddr,
         addr: SocketAddr,
     ) {
+        log::trace!("inbound data {} -> {}", src_addr, addr);
+
         if stun::message::is_message(buf) {
+            log::trace!("inbound is msg");
             let mut m = Message {
                 raw: vec![],
                 ..Message::default()
