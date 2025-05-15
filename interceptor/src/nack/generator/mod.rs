@@ -133,6 +133,10 @@ impl Generator {
 
                             let nack_pairs = nack_pairs_from_sequence_numbers(&missing);
 
+                            if nack_pairs.len() > Self::MAX_NACK_PAIRS_PER_TLN {
+                                log::warn!("got {} missing, {} nack pairs", missing.len(), nack_pairs.len());
+                            }
+
                             for nack_chunk in nack_pairs.chunks(Self::MAX_NACK_PAIRS_PER_TLN) {
                                 nacks.push(TransportLayerNack{
                                     sender_ssrc,
